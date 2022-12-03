@@ -17,7 +17,7 @@ const Solver = struct {
         var buf_reader = std.io.bufferedReader(file.reader());
         var in_stream = buf_reader.reader();
 
-        var buf: [1024]u8 = undefined;
+        var buf: [4]u8 = undefined;
 
         var list = ArrayList(Round).init(self.allocator);
         defer list.deinit();
