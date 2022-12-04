@@ -35,17 +35,17 @@ const Solver = struct {
         self.values = list.toOwnedSlice();
     }
 
-    fn dayOne(self: *Solver) u32 {
+    fn partOne(self: *Solver) u32 {
         return self.values[0];
     }
 
-    fn dayTwo(self: *Solver) u32 {
+    fn partTwo(self: *Solver) u32 {
         return self.values[0] + self.values[1] + self.values[2];
     }
 
     pub fn both(self: *Solver) [2]u32 {
         defer self.allocator.free(self.values);
-        return [2]u32{self.dayOne(), self.dayTwo()};
+        return [2]u32{self.partOne(), self.partTwo()};
     }
 };
 

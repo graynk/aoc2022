@@ -65,7 +65,7 @@ const Solver = struct {
         return error.InvalidParam;
     }
 
-    fn dayOne(self: *Solver) !u16 {
+    fn partOne(self: *Solver) !u16 {
         var list = ArrayList(u8).init(self.allocator);
         defer list.deinit();
         var sets = [2]AutoArrayHashMap(u8, void){ AutoArrayHashMap(u8, void).init(self.allocator), AutoArrayHashMap(u8, void).init(self.allocator) };
@@ -89,7 +89,7 @@ const Solver = struct {
         return priorities;
     }
 
-    fn dayTwo(self: *Solver) !u16 {
+    fn partTwo(self: *Solver) !u16 {
         var priorities: u16 = 0;
 
         var sets = [3]AutoArrayHashMap(u8, void){ AutoArrayHashMap(u8, void).init(self.allocator), AutoArrayHashMap(u8, void).init(self.allocator), AutoArrayHashMap(u8, void).init(self.allocator) };
@@ -122,7 +122,7 @@ const Solver = struct {
                 self.allocator.free(value);
             }
         }
-        return [2]u16{ try self.dayOne(), try self.dayTwo() };
+        return [2]u16{ try self.partOne(), try self.partTwo() };
     }
 };
 

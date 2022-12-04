@@ -29,7 +29,7 @@ const Solver = struct {
         self.values = list.toOwnedSlice();
     }
 
-    fn dayOne(self: *Solver) u16 {
+    fn partOne(self: *Solver) u16 {
         var count: u16 = 0;
         for (self.values) |round| {
             count += round[1] - 'X' + 1;
@@ -42,7 +42,7 @@ const Solver = struct {
         return count;
     }
 
-    fn dayTwo(self: *Solver) u16 {
+    fn partTwo(self: *Solver) u16 {
         var count: u16 = 0;
         for (self.values) |round| {
             switch (round[1]) {
@@ -63,7 +63,7 @@ const Solver = struct {
 
     pub fn both(self: *Solver) [2]u16 {
         defer self.allocator.free(self.values);
-        return [2]u16{ self.dayOne(), self.dayTwo() };
+        return [2]u16{ self.partOne(), self.partTwo() };
     }
 };
 

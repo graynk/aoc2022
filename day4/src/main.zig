@@ -61,7 +61,7 @@ const Solver = struct {
         self.values = list.toOwnedSlice();
     }
 
-    fn dayOne(self: *Solver) u16 {
+    fn partOne(self: *Solver) u16 {
         var count: u16 = 0;
         for (self.values) |elfPair| {
             if ((elfPair[0][0] <= elfPair[1][0] and elfPair[0][1] >= elfPair[1][1]) or (elfPair[1][0] <= elfPair[0][0] and elfPair[1][1] >= elfPair[0][1])) {
@@ -71,7 +71,7 @@ const Solver = struct {
         return count;
     }
 
-    fn dayTwo(self: *Solver) u16 {
+    fn partTwo(self: *Solver) u16 {
         var count: u16 = 0;
         for (self.values) |elfPair| {
             if (elfPair[0][0] <= elfPair[1][1] and elfPair[1][0] <= elfPair[0][1]) {
@@ -83,7 +83,7 @@ const Solver = struct {
 
     pub fn both(self: *Solver) [2]u16 {
         defer self.allocator.free(self.values);
-        return [2]u16{ self.dayOne(), self.dayTwo() };
+        return [2]u16{ self.partOne(), self.partTwo() };
     }
 };
 
