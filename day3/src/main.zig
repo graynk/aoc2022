@@ -131,7 +131,7 @@ pub fn main() !void {
     var solver = Solver{ .allocator = arena.allocator() };
     try solver.parseInput("input");
     const stdout = std.io.getStdOut().writer();
-    const both = solver.both();
+    const both = try solver.both();
 
     try stdout.print("{d}, {d}\n", .{ both[0], both[1] });
 }
