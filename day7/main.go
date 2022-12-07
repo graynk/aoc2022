@@ -29,10 +29,12 @@ func NewTree(parent *Tree, size int) *Tree {
 	return tree
 }
 
-func parseFileInfo(fileInfo string) (string, int) {
-	info := strings.Split(fileInfo, " ")
-	size, _ := strconv.ParseInt(info[0], 10, 64)
-	return info[1], int(size)
+func (s *Solver) Prepare(input string) {
+	s.Root = Parse(input)
+	s.Sizes = make([]int, 0, 1)
+	rootSize := s.CalculateAndCollectSize(s.Root)
+	s.Sizes = append(s.Sizes, rootSize)
+	sort.Ints(s.Sizes)
 }
 
 func Parse(filename string) *Tree {
@@ -60,8 +62,10 @@ func Parse(filename string) *Tree {
 		isCmd := split[0] == "$"
 
 		if isCmd {
-			if split[1] == "cd" {
-				currentDir = currentDir.Files[split[2]]
+			command := split[1]
+			if command == "cd" {
+				target := split[2]
+				currentDir = currentDir.Files[target]
 			}
 			continue
 		}
@@ -70,6 +74,12 @@ func Parse(filename string) *Tree {
 		currentDir.Files[name] = NewTree(currentDir, size)
 	}
 	return root
+}
+
+func parseFileInfo(fileInfo string) (string, int) {
+	info := strings.Split(fileInfo, " ")
+	size, _ := strconv.ParseInt(info[0], 10, 64)
+	return info[1], int(size)
 }
 
 func (s *Solver) CalculateAndCollectSize(t *Tree) int {
@@ -87,14 +97,6 @@ func (s *Solver) CalculateAndCollectSize(t *Tree) int {
 		size += file.Size
 	}
 	return size
-}
-
-func (s *Solver) Prepare(input string) {
-	s.Root = Parse(input)
-	s.Sizes = make([]int, 0, 1)
-	rootSize := s.CalculateAndCollectSize(s.Root)
-	s.Sizes = append(s.Sizes, rootSize)
-	sort.Ints(s.Sizes)
 }
 
 func (s *Solver) First() int {
