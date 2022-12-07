@@ -78,8 +78,8 @@ func Parse(filename string) *Tree {
 
 func parseFileInfo(fileInfo string) (string, int) {
 	info := strings.Split(fileInfo, " ")
-	size, _ := strconv.ParseInt(info[0], 10, 64)
-	return info[1], int(size)
+	size, _ := strconv.Atoi(info[0])
+	return info[1], size
 }
 
 func (s *Solver) CalculateAndCollectSize(t *Tree) int {
@@ -102,7 +102,7 @@ func (s *Solver) CalculateAndCollectSize(t *Tree) int {
 func (s *Solver) First() int {
 	sum := 0
 	for _, size := range s.Sizes {
-		if size < 100_000 {
+		if size <= 100_000 {
 			sum += size
 		}
 	}
