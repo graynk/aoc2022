@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+var solver = Solver{}
+
 func TestFirst(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -23,9 +25,8 @@ func TestFirst(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tree := Parse(tt.filename)
-			got := tree.First()
-			if got != tt.want {
+			solver.Prepare(tt.filename)
+			if got := solver.First(); got != tt.want {
 				t.Errorf("First() = %v, want %v", got, tt.want)
 			}
 		})
@@ -47,10 +48,9 @@ func TestParse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tree := Parse(tt.filename)
-			rootSize, _ := tree.CalculateSizeButOnlyIfItsCool()
-			if rootSize != tt.want {
-				t.Errorf("Parse() = %v, want %v", rootSize, tt.want)
+			solver.Prepare(tt.filename)
+			if got := solver.Sizes[len(solver.Sizes)-1]; got != tt.want {
+				t.Errorf("Parse() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -75,9 +75,8 @@ func TestSecond(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tree := Parse(tt.filename)
-			got := tree.Second(48381165)
-			if got != tt.want {
+			solver.Prepare(tt.filename)
+			if got := solver.Second(); got != tt.want {
 				t.Errorf("Second() = %v, want %v", got, tt.want)
 			}
 		})

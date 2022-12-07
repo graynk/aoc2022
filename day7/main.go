@@ -4,11 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
+
+type Solver struct {
+	Sizes []int
+	Root  *Tree
+}
 
 type Tree struct {
 	Files map[string]*Tree
@@ -67,64 +72,51 @@ func Parse(filename string) *Tree {
 	return root
 }
 
-func (t *Tree) CalculateSizeButOnlyIfItsCool() (int, int) {
+func (s *Solver) CalculateAndCollectSize(t *Tree) int {
 	size := t.Size
-	currentTaskSize := 0
 	for key, file := range t.Files {
 		if key == ".." || key == "/" {
 			continue
 		}
 		if file.Size == 0 {
-			dirSize, taskSize := file.CalculateSizeButOnlyIfItsCool()
-			if dirSize < 100_000 {
-				currentTaskSize += dirSize
-			}
-			currentTaskSize += taskSize
+			dirSize := s.CalculateAndCollectSize(file)
+			s.Sizes = append(s.Sizes, dirSize)
 			size += dirSize
 			continue
 		}
 		size += file.Size
 	}
-
-	return size, currentTaskSize
+	return size
 }
 
-func (t *Tree) CalculateSizeOfBigEnoughEghWillDoDirectory(target int) (int, int) {
-	size := t.Size
-	currentTaskSize := math.MaxInt
-	for key, file := range t.Files {
-		if key == ".." || key == "/" {
-			continue
+func (s *Solver) Prepare(input string) {
+	s.Root = Parse(input)
+	s.Sizes = make([]int, 0, 1)
+	rootSize := s.CalculateAndCollectSize(s.Root)
+	s.Sizes = append(s.Sizes, rootSize)
+	sort.Ints(s.Sizes)
+}
+
+func (s *Solver) First() int {
+	sum := 0
+	for _, size := range s.Sizes {
+		if size < 100_000 {
+			sum += size
 		}
-		if file.Size == 0 {
-			dirSize, taskSize := file.CalculateSizeOfBigEnoughEghWillDoDirectory(target)
-			if taskSize >= target && taskSize < currentTaskSize {
-				currentTaskSize = taskSize
-			} else if dirSize >= target && dirSize < currentTaskSize {
-				currentTaskSize = dirSize
-			}
-			size += dirSize
-			continue
-		}
-		size += file.Size
 	}
-
-	return size, currentTaskSize
+	return sum
 }
 
-func (t *Tree) First() int {
-	_, taskSize := t.CalculateSizeButOnlyIfItsCool()
-	return taskSize
-}
-
-func (t *Tree) Second(rootSize int) int {
-	_, taskSize := t.CalculateSizeOfBigEnoughEghWillDoDirectory(30_000_000 - (70_000_000 - rootSize))
-	return taskSize
+func (s *Solver) Second() int {
+	rootSize := s.Sizes[len(s.Sizes)-1]
+	target := 30_000_000 - (70_000_000 - rootSize)
+	index := sort.SearchInts(s.Sizes, target)
+	return s.Sizes[index]
 }
 
 func main() {
-	tree := Parse("input")
-	rootSize, first := tree.CalculateSizeButOnlyIfItsCool()
-	fmt.Println(first)
-	fmt.Println(tree.Second(rootSize))
+	solver := Solver{}
+	solver.Prepare("input")
+	fmt.Println(solver.First())
+	fmt.Println(solver.Second())
 }
