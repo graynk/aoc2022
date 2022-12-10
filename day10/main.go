@@ -14,7 +14,7 @@ type Solver struct {
 }
 
 func (s *Solver) Prepare(input string) {
-	s.X = []int{1, 1}
+	s.X = []int{1}
 	s.Parse(input)
 }
 
@@ -32,43 +32,40 @@ func (s *Solver) Parse(filename string) {
 
 	for fileScanner.Scan() {
 		last := s.X[len(s.X)-1]
-		s.X = append(s.X, last) // in-progress
 		line := fileScanner.Text()
 		split := strings.Split(line, " ")
+		s.X = append(s.X, last) // after
 		if split[0] == "noop" {
-			s.X = append(s.X, last) // after
 			continue
 		}
-		s.X = append(s.X, last) // after
-		s.X = append(s.X, last) // // second cycle: in-progress
 		value, _ := strconv.Atoi(split[1])
-		s.X = append(s.X, last+value) // after
+		s.X = append(s.X, last+value) // // second cycle: after
 	}
 }
 
 func (s *Solver) First() int {
 	sum := 0
-	for i := 20; i*2-1 < len(s.X); i += 40 {
-		sum += i * s.X[i*2-1]
+	for i := 20; i < len(s.X); i += 40 {
+		sum += i * s.X[i-1]
 	}
 	return sum
 }
 
 func (s *Solver) pixelInSprite(i int) bool {
-	pixel := (i/2 - 1) % 40
-	spritePosition := s.X[i]
+	pixel := (i - 1) % 40
+	spritePosition := s.X[i-1]
 	return pixel >= spritePosition-1 && pixel <= spritePosition+1
 }
 
 func (s *Solver) Second() string {
 	builder := strings.Builder{}
-	for i := 2; i < len(s.X); i += 2 {
+	for i := 1; i < len(s.X); i++ {
 		if s.pixelInSprite(i) {
 			builder.WriteRune('#')
 		} else {
 			builder.WriteRune('.')
 		}
-		if (i/2)%40 == 0 {
+		if i%40 == 0 {
 			builder.WriteRune('\n')
 		}
 	}
