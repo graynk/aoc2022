@@ -34,12 +34,12 @@ func (s *Solver) Parse(filename string) {
 		last := s.X[len(s.X)-1]
 		line := fileScanner.Text()
 		split := strings.Split(line, " ")
-		s.X = append(s.X, last) // after
+		s.X = append(s.X, last) // after first cycle
 		if split[0] == "noop" {
 			continue
 		}
 		value, _ := strconv.Atoi(split[1])
-		s.X = append(s.X, last+value) // // second cycle: after
+		s.X = append(s.X, last+value) // after second cycle
 	}
 }
 

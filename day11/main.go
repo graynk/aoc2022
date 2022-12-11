@@ -108,12 +108,10 @@ func parseOperation(operation string) Operation {
 }
 
 func parseOperand(operand string, old int) int {
-	var value int
 	if operand == "old" {
-		value = old
-	} else {
-		value, _ = strconv.Atoi(operand)
+		return old
 	}
+	value, _ := strconv.Atoi(operand)
 	return value
 }
 
