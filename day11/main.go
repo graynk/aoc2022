@@ -200,7 +200,6 @@ func (s *Solver) Second() int {
 
 func main() {
 	solver := Solver{filename: "input"}
-	solver.Parse()
 	fmt.Println(solver.First())
 	fmt.Println(solver.Second())
 }
