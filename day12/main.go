@@ -5,16 +5,26 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
+	"strconv"
 	"strings"
 )
 
 type Solver struct {
-	filename       string
-	Map            [][]rune
-	Visited        [][]bool
-	startX, startY int
-	endX, endY     int
+	filename string
+	Map      [][]*Cell
+	Traveler Traveler
+}
+
+type Traveler struct {
+	start  *Cell
+	target *Cell
+}
+
+type Cell struct {
+	options []*Cell
+	visited bool
+	value   rune
+	minPath int
 }
 
 var directions = [][2]int{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
@@ -24,98 +34,118 @@ func (s *Solver) Parse() {
 	defer func() {
 		_ = readFile.Close()
 	}()
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
-	s.Map = make([][]rune, 0, 1)
-	s.Visited = make([][]bool, 0, 1)
-	s.startX = -1
-	s.endX = -1
+	s.Map = make([][]*Cell, 0, 1)
+	s.Traveler = Traveler{}
+	row := -1
 	for fileScanner.Scan() {
+		row++
+		s.Map = append(s.Map, make([]*Cell, 0, 1))
 		line := fileScanner.Text()
-		s.Map = append(s.Map, []rune(line))
-		s.Visited = append(s.Visited, make([]bool, len(line)))
-		if s.startX == -1 {
-			startIndex := strings.IndexRune(line, 'S')
-			if startIndex != -1 {
-				s.startX = startIndex
-				s.startY = len(s.Map) - 1
-				s.Map[s.startY][s.startX] = 'a'
-				s.Visited[s.startY][s.startX] = true
+		for col, symbol := range line {
+			cell := Cell{
+				value:   symbol,
+				minPath: 5000,
+			}
+			s.Map[row] = append(s.Map[row], &cell)
+			switch symbol {
+			case 'S':
+				s.Map[row][col].value = 'a'
+				s.Traveler.start = s.Map[row][col]
+			case 'E':
+				s.Map[row][col].value = 'z'
+				s.Traveler.target = s.Map[row][col]
 			}
 		}
-		if s.endX == -1 {
-			endIndex := strings.IndexRune(line, 'E')
-			if endIndex != -1 {
-				s.endX = endIndex
-				s.endY = len(s.Map) - 1
-				s.Map[s.endY][s.endX] = 'z'
+	}
+	height := len(s.Map)
+	width := len(s.Map[0])
+	for row := range s.Map {
+		for col := range s.Map[row] {
+			symbol := s.Map[row][col].value
+			options := make([]*Cell, 0, 4)
+			for _, direction := range directions {
+				x, y := col+direction[0], row+direction[1]
+				if x < 0 || y < 0 || x >= width || y >= height || (s.Map[y][x].value-symbol) > 1 {
+					continue
+				}
+				options = append(options, s.Map[y][x])
 			}
+			s.Map[row][col].options = options
 		}
 	}
 }
 
-func clone(initial [][2]int) [][2]int {
-	cloned := make([][2]int, len(initial))
-	copy(cloned, initial)
-	return cloned
-}
-
-func coordInPath(x, y int, path [][2]int) bool {
-	for _, coord := range path {
-		if coord[0] == x && coord[1] == y {
+func (c *Cell) hasRouteTo(other *Cell) bool {
+	for _, option := range c.options {
+		if option == other {
 			return true
 		}
 	}
 	return false
 }
 
-func (s *Solver) canGo(x, y, newX, newY int, path [][2]int) bool {
-	if newX < 0 || newY < 0 || newY >= len(s.Map) || newX >= len(s.Map[0]) || coordInPath(newX, newY, path) {
-		return false
+func (t *Traveler) Traverse(s *Solver) int {
+	cell := t.start
+	cell.minPath = 0
+	cell.visited = true
+	options := []*Cell{cell.options[0]}
+	cell = cell.options[1]
+
+	for len(options) != 0 || !cell.visited {
+		minPathUpdated := false
+		for _, neighbour := range cell.options {
+			sumRisk := neighbour.minPath + 1
+			if cell == s.Traveler.target && neighbour.hasRouteTo(cell) {
+				fmt.Println()
+			}
+			if neighbour.visited && sumRisk < cell.minPath && neighbour.hasRouteTo(cell) {
+				cell.minPath = sumRisk
+				minPathUpdated = true
+			}
+		}
+		if !cell.visited || minPathUpdated {
+			options = append(options, cell.options...)
+		}
+
+		cell.visited = true
+
+		cell = options[0]
+		options = options[1:]
 	}
-	return (s.Map[newY][newX] - s.Map[y][x]) <= 1
+
+	return t.target.minPath
 }
 
-func (s *Solver) Search(x, y int, path [][2]int) [][2]int {
-	cloned := clone(path)
-	cloned = append(cloned, [2]int{x, y})
-
-	if x == s.endX && y == s.endY {
-		return cloned
-	}
-	//s.Visited[y][x] = true
-
-	paths := make([][][2]int, 0, 1)
-	for _, direction := range directions {
-		dirX, dirY := direction[0], direction[1]
-		newX, newY := x+dirX, y+dirY
-		if !s.canGo(x, y, newX, newY, cloned) {
-			continue
+func (s *Solver) String() string {
+	builder := strings.Builder{}
+	builder.WriteRune('\n')
+	for row := range s.Map {
+		for col := range s.Map[row] {
+			cell := s.Map[row][col]
+			//value := string(cell.value)
+			//if cell == s.Traveler.start {
+			//	value = "s"
+			//} else if cell == s.Traveler.target {
+			//	value = "e"
+			//}
+			//if cell.visited {
+			//	value = strings.ToUpper(value)
+			//}
+			builder.WriteString(strconv.Itoa(cell.minPath))
 		}
-		result := s.Search(newX, newY, cloned)
-		last := result[len(result)-1]
-		if last[0] == s.endX && last[1] == s.endY {
-			paths = append(paths, result)
-		}
+		builder.WriteRune('\n')
 	}
-
-	if len(paths) == 0 {
-		return cloned
-	}
-	sort.Slice(paths, func(i, j int) bool {
-		return len(paths[i]) < len(paths[j])
-	})
-	return paths[0]
+	return builder.String()
 }
 
 func (s *Solver) First() int {
-	shortest := s.Search(s.startX, s.startY, [][2]int{})
-	return len(shortest) - 1
+	return s.Traveler.Traverse(s)
 }
 
 func (s *Solver) Second() int {

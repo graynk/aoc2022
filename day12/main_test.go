@@ -26,6 +26,7 @@ func TestFirst(t *testing.T) {
 			solver := Solver{filename: tt.filename}
 			solver.Parse()
 			if got := solver.First(); got != tt.want {
+				t.Log(solver.String())
 				t.Errorf("First() = %v, want %v", got, tt.want)
 			}
 		})
