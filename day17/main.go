@@ -57,7 +57,6 @@ type Solver struct {
 	filename     string
 	Cavern       [][7]bool // the whole thing is upside-down, 0 row is bottom
 	Instructions []rune
-	highestFloor int
 }
 
 func (s *Solver) Parse() {
@@ -127,12 +126,12 @@ func (s *Solver) PrintCurrentState(shape Shape) string {
 		cavern = append(cavern, row)
 	}
 	builder := strings.Builder{}
-	builder.WriteString("-------\n")
+	//builder.WriteString("-------\n")
 	for i := len(cavern) - 1; i >= 0; i-- {
 		builder.WriteString(string(cavern[i]))
 		builder.WriteRune('\n')
 	}
-	builder.WriteString("-------\n")
+	//builder.WriteString("-------\n")
 	return builder.String()
 }
 
@@ -147,33 +146,13 @@ func (s *Solver) findHighest() int {
 	return -1
 }
 
-func (s *Solver) shrink() {
-	found := -1
-	for y := len(s.Cavern) - 1; y >= 0; y-- {
-		fullRow := true
-		for x := range s.Cavern[y] {
-			if !s.Cavern[y][x] {
-				fullRow = false
-				break
-			}
-		}
-		if fullRow {
-			found = y
-			break
-		}
-	}
-	if found == -1 {
-		return
-	}
-	s.highestFloor += found
-	s.Cavern = s.Cavern[found:]
-}
-
 func (s *Solver) runRounds(n int) int {
 	currentShape := 0
 	shape := s.getShape(currentShape, -1)
 	//fmt.Println(s.PrintCurrentState(shape))
 	stopped := 0
+	height := 0
+	cycleCache := make(map[int][3]int)
 	for i := 0; stopped < n; i = (i + 1) % len(s.Instructions) {
 		var xDir int
 		switch s.Instructions[i] {
@@ -192,7 +171,6 @@ func (s *Solver) runRounds(n int) int {
 		}
 		stopped++
 		s.finalizeShape(shape)
-		s.shrink()
 		currentShape = (currentShape + 1) % 5
 		highest := s.findHighest()
 		howManyRowsToAdd := highest + 4 + heights[currentShape] - len(s.Cavern)
@@ -200,14 +178,29 @@ func (s *Solver) runRounds(n int) int {
 			s.Cavern = append(s.Cavern, make([][7]bool, howManyRowsToAdd)...)
 		}
 		shape = s.getShape(currentShape, highest)
+		currentState := (currentShape << 5) + i
+		diff := 0
+		if cycle, ok := cycleCache[currentState]; ok {
+			stonesDiff := stopped - cycle[0]
+			heightDiff := highest - cycle[1]
+			if cycle[2] != stonesDiff {
+				diff = stonesDiff
+			} else {
+				// should be possible to get the last cycle from cache, but I don't care
+				jumpForward := (n - stopped) / stonesDiff
+				stopped += stonesDiff * jumpForward
+				height += heightDiff * jumpForward
+			}
+		}
+		cycleCache[currentState] = [3]int{stopped, highest, diff}
 		//fmt.Println(s.PrintCurrentState(shape))
 	}
-	return s.findHighest() + 1
+	return height + s.findHighest() + 1
 }
 
 func (s *Solver) First() int {
 	s.Cavern = make([][7]bool, 4)
-	return s.highestFloor + s.runRounds(2022)
+	return s.runRounds(2022)
 }
 
 func (s *Solver) Second() int {

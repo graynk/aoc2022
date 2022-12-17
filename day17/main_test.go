@@ -46,7 +46,7 @@ func TestSecond(t *testing.T) {
 		{
 			"part 2 full",
 			"input",
-			21800916620,
+			1582758620701,
 		},
 	}
 	for _, tt := range tests {
