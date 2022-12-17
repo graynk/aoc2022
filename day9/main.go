@@ -88,39 +88,21 @@ func hashCoords(coords [2]int) int {
 func (s *Solver) runTheRope(n int) int {
 	rope := make([][2]int, n)
 	for _, instruction := range s.Instructions {
-		switch instruction.Direction {
-		case 'U':
-			for i := 0; i < instruction.Distance; i++ {
+		for i := 0; i < instruction.Distance; i++ {
+			switch instruction.Direction {
+			case 'U':
 				rope[0][1]++
-				for knot := range rope {
-					rope[knot] = catchUp(rope[0], rope[knot])
-				}
-				s.Visited[hashCoords(rope[n-1])] = nil
-			}
-		case 'D':
-			for i := 0; i < instruction.Distance; i++ {
+			case 'D':
 				rope[0][1]--
-				for knot := range rope {
-					rope[knot] = catchUp(rope[0], rope[knot])
-				}
-				s.Visited[hashCoords(rope[n-1])] = nil
-			}
-		case 'R':
-			for i := 0; i < instruction.Distance; i++ {
-				rope[0][0]++
-				for knot := range rope {
-					rope[knot] = catchUp(rope[0], rope[knot])
-				}
-				s.Visited[hashCoords(rope[n-1])] = nil
-			}
-		case 'L':
-			for i := 0; i < instruction.Distance; i++ {
+			case 'L':
 				rope[0][0]--
-				for knot := range rope {
-					rope[knot] = catchUp(rope[0], rope[knot])
-				}
-				s.Visited[hashCoords(rope[n-1])] = nil
+			case 'R':
+				rope[0][0]++
 			}
+			for knot := range rope {
+				rope[knot] = catchUp(rope[0], rope[knot])
+			}
+			s.Visited[hashCoords(rope[n-1])] = nil
 		}
 	}
 
