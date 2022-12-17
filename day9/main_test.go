@@ -41,12 +41,17 @@ func TestSecond(t *testing.T) {
 		{
 			"part 2 test",
 			"test",
+			1,
+		},
+		{
+			"part 2 longer test",
+			"longertest",
 			36,
 		},
 		{
 			"part 2 full",
 			"input",
-			6314,
+			2504,
 		},
 	}
 	for _, tt := range tests {

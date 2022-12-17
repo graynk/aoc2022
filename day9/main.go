@@ -74,6 +74,15 @@ func catchUp(head, tail [2]int) [2]int {
 			return [2]int{hX - 1, hY}
 		}
 		return [2]int{hX + 1, hY}
+	case diffX == diffY:
+		diffSignX, diffSignY := 1, 1
+		if hX < tX {
+			diffSignX = -1
+		}
+		if hY < tY {
+			diffSignY = -1
+		}
+		return [2]int{hX - (1 * diffSignX), hY - (1 * diffSignY)}
 	}
 
 	panic("shouldn't be here")
@@ -81,7 +90,7 @@ func catchUp(head, tail [2]int) [2]int {
 
 func hashCoords(coords [2]int) int {
 	//return (x * 0x1f1f1f1f) ^ y
-	//return fmt.Sprintf("%d,%d", x, y)
+	//return fmt.Sprintf("%d,%d", coords[0], coords[1])
 	return (coords[1] << 16) ^ coords[0]
 }
 
@@ -99,8 +108,8 @@ func (s *Solver) runTheRope(n int) int {
 			case 'R':
 				rope[0][0]++
 			}
-			for knot := range rope {
-				rope[knot] = catchUp(rope[0], rope[knot])
+			for knot := 1; knot < n; knot++ {
+				rope[knot] = catchUp(rope[knot-1], rope[knot])
 			}
 			s.Visited[hashCoords(rope[n-1])] = nil
 		}
