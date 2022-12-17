@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-type Coords struct {
-	X, Y int
-}
-
 type Instruction struct {
 	Direction rune
 	Distance  int
@@ -57,63 +53,73 @@ func abshahahaha(value int) int {
 	return value
 }
 
-func catchUp(hX, hY, tX, tY int) (int, int) {
+func catchUp(head, tail [2]int) [2]int {
+	hX, hY := head[0], head[1]
+	tX, tY := tail[0], tail[1]
 	diffX, diffY := abshahahaha(hX-tX), abshahahaha(hY-tY)
 	switch {
 	case diffX <= 1 && diffY <= 1:
-		return tX, tY
+		return tail
 	case hX == tX:
 		fallthrough
 	case diffX < diffY:
 		if hY > tY {
-			return hX, hY - 1
+			return [2]int{hX, hY - 1}
 		}
-		return hX, hY + 1
+		return [2]int{hX, hY + 1}
 	case hY == tY:
 		fallthrough
 	case diffX > diffY:
 		if hX > tX {
-			return hX - 1, hY
+			return [2]int{hX - 1, hY}
 		}
-		return hX + 1, hY
+		return [2]int{hX + 1, hY}
 	}
 
 	panic("shouldn't be here")
 }
 
-func hashCoords(x, y int) int {
+func hashCoords(coords [2]int) int {
 	//return (x * 0x1f1f1f1f) ^ y
 	//return fmt.Sprintf("%d,%d", x, y)
-	return (y << 16) ^ x
+	return (coords[1] << 16) ^ coords[0]
 }
 
-func (s *Solver) First() int {
-	hX, hY, tX, tY := 0, 0, 0, 0
+func (s *Solver) runTheRope(n int) int {
+	rope := make([][2]int, n)
 	for _, instruction := range s.Instructions {
 		switch instruction.Direction {
 		case 'U':
 			for i := 0; i < instruction.Distance; i++ {
-				hY++
-				tX, tY = catchUp(hX, hY, tX, tY)
-				s.Visited[hashCoords(tX, tY)] = nil
+				rope[0][1]++
+				for knot := range rope {
+					rope[knot] = catchUp(rope[0], rope[knot])
+				}
+				s.Visited[hashCoords(rope[n-1])] = nil
 			}
 		case 'D':
 			for i := 0; i < instruction.Distance; i++ {
-				hY--
-				tX, tY = catchUp(hX, hY, tX, tY)
-				s.Visited[hashCoords(tX, tY)] = nil
+				rope[0][1]--
+				for knot := range rope {
+					rope[knot] = catchUp(rope[0], rope[knot])
+				}
+				s.Visited[hashCoords(rope[n-1])] = nil
 			}
 		case 'R':
 			for i := 0; i < instruction.Distance; i++ {
-				hX++
-				tX, tY = catchUp(hX, hY, tX, tY)
-				s.Visited[hashCoords(tX, tY)] = nil
+				rope[0][0]++
+				for knot := range rope {
+					rope[knot] = catchUp(rope[0], rope[knot])
+				}
+				s.Visited[hashCoords(rope[n-1])] = nil
 			}
 		case 'L':
 			for i := 0; i < instruction.Distance; i++ {
-				hX--
-				tX, tY = catchUp(hX, hY, tX, tY)
-				s.Visited[hashCoords(tX, tY)] = nil
+				rope[0][0]--
+				for knot := range rope {
+					rope[knot] = catchUp(rope[0], rope[knot])
+				}
+				s.Visited[hashCoords(rope[n-1])] = nil
 			}
 		}
 	}
@@ -121,8 +127,12 @@ func (s *Solver) First() int {
 	return len(s.Visited)
 }
 
+func (s *Solver) First() int {
+	return s.runTheRope(2)
+}
+
 func (s *Solver) Second() int {
-	return 0
+	return s.runTheRope(10)
 }
 
 func main() {

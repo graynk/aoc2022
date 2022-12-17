@@ -41,7 +41,7 @@ func TestSecond(t *testing.T) {
 		{
 			"part 2 test",
 			"test",
-			2713310158,
+			36,
 		},
 		{
 			"part 2 full",
@@ -52,6 +52,7 @@ func TestSecond(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			solver := Solver{filename: tt.filename}
+			solver.Parse()
 			if got := solver.Second(); got != tt.want {
 				t.Errorf("Second() = %v, want %v", got, tt.want)
 			}
